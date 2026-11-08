@@ -4,7 +4,6 @@ from datetime import date, time
 import base64
 import html as html_lib
 import streamlit.components.v1 as components
-from database import (init_db, save_appointment, get_appointments, update_appointment_status, save_payment, get_payments)
 from assistant import clinic_assistant_reply
 
 st.set_page_config(
