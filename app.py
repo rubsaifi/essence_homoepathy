@@ -1,8 +1,10 @@
 import base64
 import html
+import json
 from datetime import date
 from pathlib import Path
 from urllib.parse import quote
+from urllib.request import urlopen
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -25,6 +27,214 @@ st.set_page_config(
 BASE_DIR = Path(__file__).parent
 ASSET_DIR = BASE_DIR / "assets"
 
+INDIAN_STATES_AND_UTS = [
+    "Select a state / union territory",
+    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat",
+    "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh",
+    "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
+    "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand",
+    "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu",
+    "Jammu and Kashmir", "Ladakh", "Lakshadweep", "National Capital Territory of Delhi", "Puducherry",
+]
+
+# India is first because it is the clinic's primary service location.
+COUNTRY_OPTIONS = """India
+Afghanistan
+Albania
+Algeria
+Andorra
+Angola
+Antigua and Barbuda
+Argentina
+Armenia
+Australia
+Austria
+Azerbaijan
+Bahamas
+Bahrain
+Bangladesh
+Barbados
+Belarus
+Belgium
+Belize
+Benin
+Bhutan
+Bolivia
+Bosnia and Herzegovina
+Botswana
+Brazil
+Brunei
+Bulgaria
+Burkina Faso
+Burundi
+Cabo Verde
+Cambodia
+Cameroon
+Canada
+Central African Republic
+Chad
+Chile
+China
+Colombia
+Comoros
+Congo
+Costa Rica
+Côte d’Ivoire
+Croatia
+Cuba
+Cyprus
+Czechia
+Democratic Republic of the Congo
+Denmark
+Djibouti
+Dominica
+Dominican Republic
+Ecuador
+Egypt
+El Salvador
+Equatorial Guinea
+Eritrea
+Estonia
+Eswatini
+Ethiopia
+Fiji
+Finland
+France
+Gabon
+Gambia
+Georgia
+Germany
+Ghana
+Greece
+Grenada
+Guatemala
+Guinea
+Guinea-Bissau
+Guyana
+Haiti
+Holy See
+Honduras
+Hungary
+Iceland
+Indonesia
+Iran
+Iraq
+Ireland
+Israel
+Italy
+Jamaica
+Japan
+Jordan
+Kazakhstan
+Kenya
+Kiribati
+Kuwait
+Kyrgyzstan
+Laos
+Latvia
+Lebanon
+Lesotho
+Liberia
+Libya
+Liechtenstein
+Lithuania
+Luxembourg
+Madagascar
+Malawi
+Malaysia
+Maldives
+Mali
+Malta
+Marshall Islands
+Mauritania
+Mauritius
+Mexico
+Micronesia
+Moldova
+Monaco
+Mongolia
+Montenegro
+Morocco
+Mozambique
+Myanmar
+Namibia
+Nauru
+Nepal
+Netherlands
+New Zealand
+Nicaragua
+Niger
+Nigeria
+North Korea
+North Macedonia
+Norway
+Oman
+Pakistan
+Palau
+Palestine
+Panama
+Papua New Guinea
+Paraguay
+Peru
+Philippines
+Poland
+Portugal
+Qatar
+Romania
+Russia
+Rwanda
+Saint Kitts and Nevis
+Saint Lucia
+Saint Vincent and the Grenadines
+Samoa
+San Marino
+Sao Tome and Principe
+Saudi Arabia
+Senegal
+Serbia
+Seychelles
+Sierra Leone
+Singapore
+Slovakia
+Slovenia
+Solomon Islands
+Somalia
+South Africa
+South Korea
+South Sudan
+Spain
+Sri Lanka
+Sudan
+Suriname
+Sweden
+Switzerland
+Syria
+Taiwan
+Tajikistan
+Tanzania
+Thailand
+Timor-Leste
+Togo
+Tonga
+Trinidad and Tobago
+Tunisia
+Turkey
+Turkmenistan
+Tuvalu
+Uganda
+Ukraine
+United Arab Emirates
+United Kingdom
+United States
+Uruguay
+Uzbekistan
+Vanuatu
+Venezuela
+Vietnam
+Yemen
+Zambia
+Zimbabwe""".splitlines()
+
 # Verify this number with the clinic before publishing.
 CLINIC_WHATSAPP = "919315331235"
 
@@ -44,6 +254,58 @@ def find_asset(*filenames):
         if match and match.is_file():
             return match
     return None
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def lookup_indian_pincode(pincode):
+    """Look up a best-effort city/district and state suggestion for an Indian PIN."""
+    try:
+        with urlopen(f"https://api.postalpincode.in/pincode/{pincode}", timeout=4) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        if not payload or payload[0].get("Status") != "Success":
+            return None
+        offices = payload[0].get("PostOffice") or []
+        if not offices:
+            return None
+        office = offices[0]
+        return {
+            "city": office.get("Block") or office.get("District") or office.get("Name") or "",
+            "state": office.get("State") or "",
+        }
+    except Exception:
+        return None
+
+
+def lookup_address_from_pincode():
+    pincode = st.session_state.get("appointment_pincode", "").strip()
+    country = st.session_state.get("appointment_country", "India")
+    st.session_state["appointment_pin_status"] = ""
+    if country != "India":
+        st.session_state["appointment_pin_status"] = "Automatic PIN lookup is available for India; enter city and state manually for other countries."
+        return
+    if len(pincode) != 6 or not pincode.isdigit():
+        return
+
+    details = lookup_indian_pincode(pincode)
+    if not details or not details.get("city"):
+        st.session_state["appointment_pin_status"] = "PIN lookup was unavailable or no match was found. Please enter the city and state manually."
+        return
+
+    st.session_state["appointment_city"] = details["city"]
+    state = details.get("state", "").strip()
+    aliases = {
+        "delhi": "National Capital Territory of Delhi",
+        "orissa": "Odisha",
+        "pondicherry": "Puducherry",
+        "uttaranchal": "Uttarakhand",
+        "andaman & nicobar islands": "Andaman and Nicobar Islands",
+        "dadra and nagar haveli": "Dadra and Nagar Haveli and Daman and Diu",
+        "dadra & nagar haveli and daman & diu": "Dadra and Nagar Haveli and Daman and Diu",
+    }
+    normalized_state = aliases.get(state.lower(), state)
+    if normalized_state in INDIAN_STATES_AND_UTS:
+        st.session_state["appointment_state"] = normalized_state
+    st.session_state["appointment_pin_status"] = "City and state suggested from the PIN. Please review and correct if needed."
 
 
 # ---------------- Olive green + white theme ----------------
@@ -565,6 +827,55 @@ elif nav == "Book Appointment":
         "so you can send it directly to the clinic. The clinic must confirm the slot."
     )
 
+    name = st.text_input("Full name *", key="appointment_name")
+    phone = st.text_input(
+        "Mobile number *",
+        max_chars=20,
+        help="Enter a number the clinic can use to contact you.",
+        key="appointment_phone",
+    )
+
+    st.markdown("#### Address")
+    country = st.selectbox(
+        "Country",
+        COUNTRY_OPTIONS,
+        index=0,
+        key="appointment_country",
+        on_change=lookup_address_from_pincode,
+    )
+    house_col, street_col = st.columns([1, 2], gap="medium")
+    with house_col:
+        house_no = st.text_input("House No", key="appointment_house_no")
+    with street_col:
+        street_area = st.text_input("Street / Area Name", key="appointment_street_area")
+
+    pin_col, city_col = st.columns(2, gap="medium")
+    with pin_col:
+        pincode = st.text_input(
+            "Pincode / Postal code",
+            max_chars=6 if country == "India" else 12,
+            key="appointment_pincode",
+            on_change=lookup_address_from_pincode,
+            help="Enter a six-digit PIN for an automatic city and state suggestion in India.",
+        )
+    with city_col:
+        city = st.text_input("City", key="appointment_city")
+
+    if country == "India":
+        state = st.selectbox(
+            "State / Union Territory",
+            INDIAN_STATES_AND_UTS,
+            key="appointment_state",
+        )
+    else:
+        state = st.text_input("State / Province", key="appointment_state_other")
+    if st.session_state.get("appointment_pin_status"):
+        st.caption(st.session_state["appointment_pin_status"])
+    st.caption(
+        "City and state suggestions are best-effort and can be edited. For Indian PIN lookup, only the PIN is sent "
+        "to a public postal lookup service."
+    )
+
     session = st.selectbox(
         "Preferred session",
         ["Morning (10 AM – 2 PM)", "Evening (5 PM – 9 PM)"],
@@ -572,12 +883,6 @@ elif nav == "Book Appointment":
     )
 
     with st.form("appointment_form", clear_on_submit=False):
-        name = st.text_input("Full name *")
-        phone = st.text_input(
-            "Your phone number *",
-            max_chars=20,
-            help="Enter a number the clinic can use to contact you.",
-        )
         appt_date = st.date_input("Preferred date", min_value=date.today())
         if session.startswith("Morning"):
             time_options = ["10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM"]
@@ -591,10 +896,22 @@ elif nav == "Book Appointment":
         if not name.strip() or not phone.strip() or not consent:
             st.error("Please complete your name, phone number, and contact consent.")
         else:
+            address_lines = [
+                f"House No: {house_no.strip()}" if house_no.strip() else "",
+                f"Street / Area: {street_area.strip()}" if street_area.strip() else "",
+                f"City: {city.strip()}" if city.strip() else "",
+                f"Pincode / Postal code: {pincode.strip()}" if pincode.strip() else "",
+                f"State / Province: {state}" if state and state != "Select a state / union territory" else "",
+                f"Country: {country}" if country else "",
+            ]
+            address_lines = [line for line in address_lines if line]
+            address_body = "\n".join(address_lines)
+            address_message = f"Address:\n{address_body}\n" if address_lines else ""
             message = (
                 "Hello Essence Homeopathy, I would like to request an appointment.\n"
                 f"Name: {name.strip()}\n"
                 f"Phone: {phone.strip()}\n"
+                f"{address_message}"
                 f"Preferred date: {appt_date.isoformat()}\n"
                 f"Session: {session}\n"
                 f"Preferred time: {preferred_time}\n"
