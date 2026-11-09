@@ -16,7 +16,7 @@ except Exception:
 
 
 st.set_page_config(
-    page_title="Essence Homeopathy | Dr Faihad Waris Saifi",
+    page_title="Essence Homeopathy | Dr. Faihed Waris Saifi",
     page_icon="🌿",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -123,7 +123,43 @@ st.markdown(
         100% { transform: scale(1) translateY(0); }
     }
     [data-testid="stImage"] img { border-radius: 16px; }
+    .brand-banner {
+        background: #A8BFAE; width: 100vw; box-sizing: border-box; overflow: visible;
+        margin-left: calc(50% - 50vw); margin-bottom: 1rem;
+        padding: 1rem max(1rem, calc((100vw - 1220px) / 2));
+    }
+    .brand-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; max-width: 1220px; min-width: 0; margin: 0 auto; overflow: visible; }
+    .brand-logo { display: block; width: 96px; height: auto; max-height: none; object-fit: contain; object-position: center; flex: 0 0 auto; }
+    .brand-copy { min-width: 0; }
+    .brand-name { color: #123D32; font-size: clamp(1.15rem, 2.8vw, 1.9rem); font-weight: 850; line-height: 1.12; overflow-wrap: anywhere; }
+    .brand-tagline { color: #294337; font-size: .9rem; margin-top: .22rem; }
+    .brand-appointment { margin-left: auto; flex: 0 0 auto; background: rgba(255,255,255,.72); color: #294337; border-radius: 999px; padding: .45rem .8rem; font-size: .84rem; font-weight: 700; }
+    @media (max-width: 600px) {
+        .brand-banner { padding: .85rem 1rem; }
+        .brand-inner { gap: .65rem; }
+        .brand-logo { width: 76px; height: auto; }
+        .brand-name { font-size: clamp(1rem, 5vw, 1.4rem); }
+        .brand-tagline { font-size: .8rem; }
+        .brand-appointment { font-size: .76rem; padding: .4rem .65rem; }
+    }
     .section-kicker { color: #65743A; font-size: .78rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    .area-card {
+        background: linear-gradient(145deg,#FFFFFF 0%,#F7F9F5 100%);
+        border: 1px solid #E2EADD; border-radius: 20px; padding: 1.2rem;
+        min-height: 100%; box-shadow: 0 7px 20px rgba(18,61,50,.055);
+        transition: transform .28s ease, box-shadow .28s ease;
+        animation: fadeUp .7s ease both;
+    }
+    .area-card:hover { transform: translateY(-7px) scale(1.01); box-shadow: 0 18px 34px rgba(18,61,50,.15); }
+    .area-image-frame { width: 100%; height: 260px; overflow: hidden; border-radius: 16px; margin-bottom: 1rem; background: #EAF1E6; }
+    .area-image { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; animation: imageDrift 14s ease-in-out infinite alternate; transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+    .area-card:hover .area-image { transform: scale(1.08); }
+    .area-card h3 { margin: .1rem 0 .7rem; font-size: 1.1rem; }
+    .condition-list { list-style: none; padding: 0; margin: .65rem 0 0; }
+    .condition-list li { display: flex; align-items: center; gap: .65rem; padding: .55rem 0; border-top: 1px solid #E7EADF; color: #35402E; }
+    .condition-icon { display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 11px; background: #EEF4E9; font-size: 1.2rem; }
+    @keyframes imageDrift { from { object-position: 50% 42%; } to { object-position: 50% 58%; } }
+    @media (max-width: 700px) { .area-image-frame { height: 220px; } }
     .doctor-panel { background: #F7F9F5; border: 1px solid #E2EADD; border-radius: 20px; padding: 1.2rem; }
     @keyframes fadeUp { from {opacity: 0; transform: translateY(16px);} to {opacity: 1; transform: translateY(0);} }
     @media (prefers-reduced-motion: reduce) {
@@ -136,20 +172,42 @@ st.markdown(
 
 
 # ---------------- Header and navigation ----------------
-left, right = st.columns([2.2, 1], vertical_alignment="center")
-with left:
-    st.markdown("### 🌿 ESSENCE HOMEOPATHY")
-    st.caption("A welcoming space for your consultation")
-with right:
-    st.markdown(
-        '<div style="text-align:right"><span class="pill">Appointments by request</span></div>',
-        unsafe_allow_html=True,
-    )
+logo = find_asset("Logo.jpg", "Logo.jpeg", "logo.png", "logo.webp")
+logo_markup = ""
+if logo:
+    image_mime = "image/png" if logo.suffix.lower() == ".png" else "image/jpeg"
+    logo_data = base64.b64encode(logo.read_bytes()).decode("ascii")
+    logo_markup = f'<img class="brand-logo" src="data:{image_mime};base64,{logo_data}" alt="Essence Homoeopathic Clinic logo">'
+
+st.markdown(
+    f"""
+    <div class="brand-banner">
+      <div class="brand-inner">
+        {logo_markup}
+        <div class="brand-copy">
+          <div class="brand-name">ESSENCE - THE HOMEOPATHY</div>
+          <div class="brand-tagline">A welcoming space for your consultation</div>
+        </div>
+        <div class="brand-appointment">Appointments by request</div>
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 st.markdown('<div class="section-kicker">Explore the clinic</div>', unsafe_allow_html=True)
 nav = st.radio(
     "Navigate",
-    ["Home", "About the Doctor", "Clinic Gallery", "Book Appointment", "AI Clinic Assistant", "Contact"],
+    [
+        "Home",
+        "About the Doctor",
+        "Areas of Consultation",
+        "Why Essence Homeopathy?",
+        "Clinic Gallery",
+        "Book Appointment",
+        "AI Clinic Assistant",
+        "Contact",
+    ],
     horizontal=True,
     label_visibility="collapsed",
 )
@@ -165,7 +223,7 @@ if nav == "Home":
             <div class="hero">
               <div class="eyebrow">Welcome to Essence Homeopathy</div>
               <div class="hero-title">Care that begins<br>with listening.</div>
-              <div class="hero-copy">Meet <b>Dr Faihad Waris Saifi</b> and connect with our clinic to enquire about consultation availability.</div>
+              <div class="hero-copy">Meet <b>Dr. Faihed Waris Saifi</b> and connect with our clinic to enquire about consultation availability.</div>
               <br><span class="pill">☀️ Morning · 10 AM – 2 PM</span>
               &nbsp; <span class="pill">🌙 Evening · 5 PM – 9 PM</span>
             </div>
@@ -181,14 +239,40 @@ if nav == "Home":
     with right:
         doctor_photo = find_asset("Dr.jpg", "dr.jpg", "Doctor.jpg", "doctor.jpg")
         if doctor_photo:
-            st.image(str(doctor_photo), caption="Dr Faihad Waris Saifi", use_container_width=True)
+            st.image(str(doctor_photo), caption="Dr. Faihed Waris Saifi", use_container_width=True)
         else:
             st.markdown(
                 '<div class="doctor-panel"><div class="section-kicker">Your doctor</div>'
-                '<h2>Dr Faihad Waris Saifi</h2><p>Essence Homeopathy</p>'
+                '<h2>Dr. Faihed Waris Saifi</h2><p>Essence Homeopathy</p>'
                 '<p class="small-note">Add the doctor portrait as assets/Dr.jpg to display it here.</p></div>',
                 unsafe_allow_html=True,
             )
+
+    st.write("")
+    st.markdown("## About Essence Homeopathy")
+    st.subheader("A Clinic Built Around Listening, Understanding & Care")
+    st.write(
+        "Essence Homoeopathy is a homeopathic clinic founded by Dr. Faihad Waris Saifi in Geeta Colony, Delhi."
+    )
+    st.write(
+        "We believe that a meaningful consultation begins with listening carefully to the patient. "
+        "Our clinic aims to provide a comfortable environment where patients can discuss their health concerns, "
+        "understand their consultation process and receive appropriate guidance."
+    )
+    st.write(
+        "Our focus is on creating a professional and welcoming healthcare experience for every visitor."
+    )
+    st.markdown("*Essence Homoeopathy — The Art of Subtle Healing.*")
+
+    st.write("")
+    st.markdown('<div class="section-kicker">Patient Experiences</div>', unsafe_allow_html=True)
+    st.subheader("What Patients Say About Essence Homoeopathy")
+    st.write("We appreciate every patient who takes the time to share their experience with our clinic.")
+    st.write("Read genuine patient feedback and reviews on Google.")
+    st.link_button(
+        "Read Our Google Reviews",
+        "https://www.google.com/maps/place/Essence-The+Homeopathic+Clinic/@28.6530365,77.2731503,17z/",
+    )
 
     st.write("")
     col1, col2, col3 = st.columns(3)
@@ -217,22 +301,178 @@ if nav == "Home":
 # ---------------- About the doctor ----------------
 elif nav == "About the Doctor":
     st.markdown('<div class="section-kicker">Meet your doctor</div>', unsafe_allow_html=True)
-    st.title("Dr Faihad Waris Saifi")
+    st.title("Dr. Faihad Waris Saifi")
     photo_col, detail_col = st.columns([1, 1.7], gap="large", vertical_alignment="center")
     doctor_photo = find_asset("Dr.jpg", "dr.jpg", "Doctor.jpg", "doctor.jpg")
     with photo_col:
         if doctor_photo:
-            st.image(str(doctor_photo), caption="Dr Faihad Waris Saifi", use_container_width=True)
+            st.image(str(doctor_photo), caption="Dr. Faihad Waris Saifi", use_container_width=True)
         else:
             st.info("Doctor profile photo not found. Place the image at assets/Dr.jpg.")
     with detail_col:
-        st.markdown("### Welcome to Essence Homeopathy")
+        st.markdown("### BHMS | NHMC, University of Delhi")
+        st.markdown("#### Welcome to Essence Homoeopathy")
         st.write(
-            "Dr Faihad Waris Saifi welcomes patients to Essence Homeopathy. "
-            "For verified information about qualifications, registration, areas of practice, "
-            "and consultation approach, please contact the clinic."
+            "Dr. Faihad Waris Saifi is a homeopathic physician and the founder of Essence Homoeopathy, "
+            "located in Geeta Colony, Delhi."
         )
-        st.caption("Add only qualifications and registration details that have been verified against original documents.")
+        st.write(
+            "With a background in homeopathic medicine from Nehru Homoeopathic Medical College, University of Delhi, "
+            "he welcomes patients seeking consultation for a wide range of health concerns."
+        )
+        st.write(
+            "At Essence Homoeopathy, the consultation process begins with understanding the patient’s concerns, "
+            "medical history, symptoms and overall health experience."
+        )
+        st.write(
+            "The aim is to provide a professional, attentive and comfortable consultation experience while helping "
+            "patients make informed decisions about their healthcare."
+        )
+        st.markdown(
+            "**Dr. Faihad Waris Saifi**  \n"
+            "Founder & Homeopathic Physician  \n"
+            "Essence Homoeopathy, Delhi"
+        )
+
+
+# ---------------- Areas of consultation ----------------
+elif nav == "Areas of Consultation":
+    st.title("Areas of Consultation")
+    st.write("Explore the health concerns patients may discuss during an individual consultation.")
+
+    condition_details = {
+        "Allergic rhinitis": (
+            "It is an immune response to airborne allergens such as pollen, dust mites or pet dander.",
+            "Note possible triggers and limit exposure when practical. Seek medical advice if symptoms affect sleep or daily life, or worsen asthma.",
+            "NHS: Allergic rhinitis", "https://www.nhs.uk/conditions/allergic-rhinitis/",
+        ),
+        "Recurrent respiratory complaints": (
+            "Repeated cough, wheeze or infections can have several causes, including infections, allergies or an underlying lung condition.",
+            "Arrange medical assessment for repeated or persistent symptoms. Seek urgent care for severe breathing difficulty, chest pain or coughing blood.",
+            "NHS: Respiratory tract infections", "https://www.nhs.uk/conditions/respiratory-tract-infection/",
+        ),
+        "Sinus-related concerns": (
+            "Sinus lining swelling often follows a cold or flu; allergies may also contribute.",
+            "Avoid smoke and note recurring triggers. Get medical advice if episodes recur, symptoms persist or worsen, or you feel very unwell.",
+            "NHS: Sinusitis", "https://www.nhs.uk/conditions/sinusitis-sinus-infection/",
+        ),
+        "Acne": (
+            "Hair follicles can become blocked by oil and dead skin cells; hormone changes may contribute.",
+            "Use gentle skin care and avoid squeezing or scrubbing spots. Seek assessment for painful, scarring or persistent acne.",
+            "NHS: Acne", "https://www.nhs.uk/conditions/acne/",
+        ),
+        "Eczema": (
+            "Atopic eczema has no single known cause; family history and skin irritants or allergens can play a role.",
+            "Avoid known irritants and follow a clinician’s skin-care advice. Get prompt care if skin suddenly worsens, looks infected, or fever occurs.",
+            "NHS: Atopic eczema", "https://www.nhs.uk/conditions/atopic-eczema/",
+        ),
+        "Psoriasis": (
+            "Skin cells build up faster than usual, likely involving the immune system; the exact cause is not known.",
+            "Get a medical assessment for new or worsening patches. Seek review for recurring joint pain, stiffness or swelling, and follow prescribed care.",
+            "NHS: Psoriasis", "https://www.nhs.uk/conditions/psoriasis/",
+        ),
+        "Acidity and digestive discomfort": (
+            "Acid reflux occurs when stomach contents travel back towards the throat; some foods, smoking, pregnancy or medicines may contribute.",
+            "Notice personal triggers and avoid lying down soon after meals. Seek care for frequent symptoms, trouble swallowing, repeated vomiting or unexplained weight loss.",
+            "NHS: Heartburn and acid reflux", "https://www.nhs.uk/conditions/heartburn-and-acid-reflux/",
+        ),
+        "Constipation": (
+            "Possible contributors include too little fibre or fluid, low activity, routine changes, some medicines or health conditions.",
+            "If suitable for you, increase fibre gradually, drink fluids and stay active. Seek medical advice for persistent symptoms, blood in stool, weight loss or abdominal pain.",
+            "NHS: Constipation", "https://www.nhs.uk/conditions/constipation/",
+        ),
+        "Recurrent digestive complaints": (
+            "Recurring digestive symptoms have many possible causes, including food-related triggers, reflux, infection or other gut conditions.",
+            "Keep a brief symptom, food and medication record. Arrange assessment for repeated symptoms; seek prompt care for severe pain, blood, persistent vomiting or unexplained weight loss.",
+            "NHS: Digestive health", "https://www.nhs.uk/live-well/eat-well/digestive-health/",
+        ),
+        "Menstrual health concerns": (
+            "Periods can vary with puberty, perimenopause, pregnancy, contraception, stress, weight changes or health conditions.",
+            "Track cycle dates and bleeding. Ask a clinician about new changes, very heavy or prolonged bleeding, bleeding between periods, or bleeding after menopause.",
+            "NHS: Irregular periods", "https://www.nhs.uk/symptoms/irregular-periods/",
+        ),
+        "PCOD-related concerns": (
+            "The exact cause of PCOD (also called PCOS) is unknown; hormones, insulin regulation and family history may be involved.",
+            "A clinician can assess symptoms and discuss appropriate follow-up. Seek care for irregular periods or related concerns rather than self-diagnosing.",
+            "NHS Wales: PCOS", "https://111.wales.nhs.uk/polycysticovarysyndrome",
+        ),
+        "Uterine fibroids": (
+            "Fibroids are non-cancerous growths from the muscle tissue of the uterus; their exact cause is unknown.",
+            "Discuss heavy bleeding, pelvic pain or pressure with a clinician. Seek prompt care for very heavy bleeding or severe pain.",
+            "NHS: Fibroids", "https://www.nhs.uk/conditions/fibroids/",
+        ),
+        "Recurrent health complaints": (
+            "This is a broad description rather than one diagnosis, so possible causes vary from person to person.",
+            "Keep a symptom timeline and list of medicines or tests. Arrange an assessment if symptoms recur, persist or worsen.",
+            "", "",
+        ),
+        "Long-standing health concerns": (
+            "Long-term symptoms may relate to a chronic condition, medicine effects or more than one underlying cause.",
+            "Attend follow-up reviews and do not stop prescribed medicines without medical advice. Seek review for new or worsening symptoms.",
+            "", "",
+        ),
+        "General homeopathic consultation": (
+            "A consultation is not a diagnosis; the reason for symptoms needs individual medical assessment.",
+            "Bring relevant reports and a current medication list. Continue appropriate medical care and seek urgent help for severe symptoms.",
+            "", "",
+        ),
+    }
+    consultation_areas = [
+        ("Respiratory & Allergic Concerns", "consultation_respiratory.png", [("🌼", "Allergic rhinitis"), ("🫁", "Recurrent respiratory complaints"), ("👃", "Sinus-related concerns")]),
+        ("Skin & Dermatological Concerns", "consultation_skin.png", [("✨", "Acne"), ("🧴", "Eczema"), ("🫧", "Psoriasis")]),
+        ("Digestive Health", "consultation_digestive.png", [("🔥", "Acidity and digestive discomfort"), ("🥣", "Constipation"), ("🌿", "Recurrent digestive complaints")]),
+        ("Women’s Health", "consultation_womens_health.png", [("🩺", "Menstrual health concerns"), ("🧬", "PCOD-related concerns"), ("🩻", "Uterine fibroids")]),
+        ("General & Chronic Health Concerns", "consultation_general.png", [("🩺", "Recurrent health complaints"), ("📋", "Long-standing health concerns"), ("👩‍⚕️", "General homeopathic consultation")]),
+    ]
+    for row_start in range(0, len(consultation_areas), 2):
+        cols = st.columns(2, gap="medium")
+        for col_offset, (col, (heading, image_filename, concerns)) in enumerate(
+            zip(cols, consultation_areas[row_start:row_start + 2])
+        ):
+            image_path = ASSET_DIR / image_filename
+            image_data = base64.b64encode(image_path.read_bytes()).decode("ascii") if image_path.is_file() else ""
+            image_markup = (
+                f'<div class="area-image-frame"><img class="area-image" src="data:image/png;base64,{image_data}" '
+                f'alt="Illustration for {html.escape(heading)}" loading="lazy"></div>'
+                if image_data
+                else '<div class="area-image-frame"></div>'
+            )
+            delay = (row_start + col_offset) * 0.1
+            with col:
+                st.markdown(
+                    f'<div class="area-card" style="animation-delay:{delay:.2f}s">'
+                    f'{image_markup}<h3>{html.escape(heading)}</h3>'
+                    '</div>',
+                    unsafe_allow_html=True,
+                )
+                for icon, label in concerns:
+                    occurrence, precautions, source_name, source_url = condition_details[label]
+                    with st.expander(f"{icon} {label}"):
+                        st.markdown(f"**How it may occur:** {occurrence}")
+                        st.markdown(f"**Precautions:** {precautions}")
+                        if source_url:
+                            st.caption(f"General information: [{source_name}]({source_url})")
+
+# ---------------- Why Essence Homeopathy ----------------
+elif nav == "Why Essence Homeopathy?":
+    st.title("Why Essence Homeopathy?")
+    st.subheader("A Comfortable & Professional Consultation Experience")
+
+    why_items = [
+        ("Patient-Centred Consultation", "We take time to understand your health concerns and medical history."),
+        ("Professional Environment", "A welcoming and comfortable clinic environment for consultation."),
+        ("Clear Communication", "We encourage patients to discuss their concerns and ask questions."),
+        ("Convenient Location", "Located in Geeta Colony, Delhi, near Taj Enclave."),
+        ("Appointment-Based Consultation", "Contact the clinic to enquire about consultation availability and appointments."),
+    ]
+    for start_idx in range(0, len(why_items), 2):
+        cols = st.columns(2, gap="medium")
+        for col, (heading, description) in zip(cols, why_items[start_idx:start_idx + 2]):
+            with col:
+                st.markdown(
+                    f'<div class="info-card"><h3>{heading}</h3><p>{description}</p></div>',
+                    unsafe_allow_html=True,
+                )
 
 
 # ---------------- Clinic gallery ----------------
@@ -305,10 +545,30 @@ elif nav == "Clinic Gallery":
 
 # ---------------- Appointment request: WhatsApp, no database ----------------
 elif nav == "Book Appointment":
-    st.title("Request an Appointment")
+    st.markdown('<div class="section-kicker">YOUR CONSULTATION EXPERIENCE</div>', unsafe_allow_html=True)
+    st.subheader("A Thoughtful Approach to Consultation")
+    st.write("At Essence Homoeopathy, consultation involves:")
+    st.markdown(
+        "- Understanding your primary health concerns.\n"
+        "- Reviewing relevant symptoms and medical history.\n"
+        "- Discussing previous treatments and available medical reports.\n"
+        "- Understanding your healthcare needs.\n"
+        "- Providing appropriate guidance and discussing treatment options."
+    )
+    st.write(
+        "Patients are encouraged to bring relevant prescriptions, investigation reports and details of ongoing medications."
+    )
+
+    st.markdown("### Book Your Consultation")
     st.write(
         "Share your preferred appointment details. This request opens WhatsApp "
         "so you can send it directly to the clinic. The clinic must confirm the slot."
+    )
+
+    session = st.selectbox(
+        "Preferred session",
+        ["Morning (10 AM – 2 PM)", "Evening (5 PM – 9 PM)"],
+        key="appointment_session",
     )
 
     with st.form("appointment_form", clear_on_submit=False):
@@ -319,11 +579,10 @@ elif nav == "Book Appointment":
             help="Enter a number the clinic can use to contact you.",
         )
         appt_date = st.date_input("Preferred date", min_value=date.today())
-        session = st.selectbox("Preferred session", ["Morning (10 AM – 2 PM)", "Evening (5 PM – 9 PM)"])
         if session.startswith("Morning"):
-            time_options = ["10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM"]
+            time_options = ["10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM"]
         else:
-            time_options = ["5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM"]
+            time_options = ["5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM"]
         preferred_time = st.selectbox("Preferred time within the selected session", time_options)
         consent = st.checkbox("I agree that the clinic may contact me about this appointment request. *")
         submitted = st.form_submit_button("Continue to WhatsApp")
@@ -399,13 +658,12 @@ elif nav == "AI Clinic Assistant":
 # ---------------- Contact ----------------
 elif nav == "Contact":
     st.title("Contact Essence Homeopathy")
-    st.subheader("Dr Faihad Waris Saifi")
+    st.subheader("Dr. Faihed Waris Saifi")
     st.write("**Clinic timings**")
     st.write("☀️ Morning: 10:00 AM – 2:00 PM")
     st.write("🌙 Evening: 5:00 PM – 9:00 PM")
-    st.info("Please verify the clinic's address and phone number before sharing this website publicly.")
-    st.markdown("**Phone / WhatsApp:** +91 95554 31235")
-    st.markdown("[Call the clinic](tel:+919555431235) · [WhatsApp the clinic](https://wa.me/919555431235)")
+    st.markdown("**Phone / WhatsApp:** +91 93153 31235")
+    st.markdown("[Call the clinic](tel:+919315331235) · [WhatsApp the clinic](https://wa.me/919315331235)")
 
     qr_path = find_asset("qr_Code.jpg", "QR_Code.jpg", "qr_code.jpg", "QR_Code.png", "qr_code.png")
     qr_col, map_col = st.columns([1, 1.6], gap="large", vertical_alignment="center")
@@ -427,7 +685,7 @@ elif nav == "Contact":
 st.markdown(
     """
     <div class="footer">
-      <b>Essence Homeopathy</b> · Dr Faihad Waris Saifi<br>
+      <b>Essence Homeopathy</b> · Dr. Faihed Waris Saifi<br>
       This website provides clinic and appointment information, not medical diagnosis or treatment.
       In an emergency, seek urgent medical care.
     </div>
