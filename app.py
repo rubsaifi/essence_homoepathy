@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).parent
 ASSET_DIR = BASE_DIR / "assets"
 
 # Verify this number with the clinic before publishing.
-CLINIC_WHATSAPP = "919555431235"
+CLINIC_WHATSAPP = "919315331235"
 
 
 def find_asset(*filenames):
