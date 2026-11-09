@@ -252,7 +252,7 @@ if nav == "Home":
     st.markdown("## About Essence Homeopathy")
     st.subheader("A Clinic Built Around Listening, Understanding & Care")
     st.write(
-        "Essence Homoeopathy is a homeopathic clinic founded by Dr. Faihad Waris Saifi in Geeta Colony, Delhi."
+        "Essence Homoeopathy is a homeopathic clinic founded by Dr. Faihed Waris Saifi in Geeta Colony, Delhi."
     )
     st.write(
         "We believe that a meaningful consultation begins with listening carefully to the patient. "
@@ -301,19 +301,19 @@ if nav == "Home":
 # ---------------- About the doctor ----------------
 elif nav == "About the Doctor":
     st.markdown('<div class="section-kicker">Meet your doctor</div>', unsafe_allow_html=True)
-    st.title("Dr. Faihad Waris Saifi")
+    st.title("Dr. Faihed Waris Saifi")
     photo_col, detail_col = st.columns([1, 1.7], gap="large", vertical_alignment="center")
     doctor_photo = find_asset("Dr.jpg", "dr.jpg", "Doctor.jpg", "doctor.jpg")
     with photo_col:
         if doctor_photo:
-            st.image(str(doctor_photo), caption="Dr. Faihad Waris Saifi", use_container_width=True)
+            st.image(str(doctor_photo), caption="Dr. Faihed Waris Saifi", use_container_width=True)
         else:
             st.info("Doctor profile photo not found. Place the image at assets/Dr.jpg.")
     with detail_col:
         st.markdown("### BHMS | NHMC, University of Delhi")
         st.markdown("#### Welcome to Essence Homoeopathy")
         st.write(
-            "Dr. Faihad Waris Saifi is a homeopathic physician and the founder of Essence Homoeopathy, "
+            "Dr. Faihed Waris Saifi is a homeopathic physician and the founder of Essence Homoeopathy, "
             "located in Geeta Colony, Delhi."
         )
         st.write(
@@ -329,7 +329,7 @@ elif nav == "About the Doctor":
             "patients make informed decisions about their healthcare."
         )
         st.markdown(
-            "**Dr. Faihad Waris Saifi**  \n"
+            "**Dr. Faihed Waris Saifi**  \n"
             "Founder & Homeopathic Physician  \n"
             "Essence Homoeopathy, Delhi"
         )
